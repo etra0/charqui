@@ -51,7 +51,9 @@ module Charqui
     end
 
     def parse_ratio(ratio : String)
-      puts "Parsing the #{ratio}!"
+      vid, sound = ratio.split(":").map &.to_f
+      total = vid + sound
+      @ratio = vid / total
     end
 
     def parse_size(size : String)
