@@ -9,5 +9,6 @@ module Charqui
     cli.execute
   rescue ex
     print "ERROR: ".colorize(:red), ex.message, "\n"
+    exit 1
   end
 end
