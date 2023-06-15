@@ -33,8 +33,7 @@ module Charqui
 
         parser.on("-s SIZE", "--size=SIZE",
                   <<-STRING
-                  Target size, you can use plain bytes or abbreviations (in uppercase),
-                    example: 10MB, 100KB, etc. Default: 5MB
+                  Target size, example: 10MB, 100KB, etc. Default: 5MB
                   STRING
                  ) { |sz| self.parse_size sz }
 
@@ -46,8 +45,8 @@ module Charqui
         ) { |res| @target_resolution = res }
 
         parser.unknown_args do |rem|
-          raise "Missing input file" if rem.empty?
-          raise "We only support one file as input" if rem.size > 1
+          raise "Missing input file." if rem.empty?
+          raise "We only support one file as input." if rem.size > 1
 
           @input_name = Path.new rem[0]
         end
@@ -74,19 +73,19 @@ module Charqui
       # the bitrate, which means when we try to target a specific size, they
       # can be bigger which renders this tools unusable.
       # TODO: Investigate if we can solve this in the future.
-      # return "h264_videotoolbox" if output.includes? "videotoolbox"
       # return "h264_nvenc" if output.includes? "enable-nvenc"
+      # return "h264_videotoolbox" if output.includes? "videotoolbox"
       return "libx264"
     end
 
     def execute
-      # First we get the duration of the clip
       raise "Input file #{@input_name} doesn't exists." if !File.exists?(@input_name)
 
       if File.size(@input_name) / 1024 <= @target_size
         raise "Target file size is actually bigger than the original file."
       end
 
+      # First we get the duration of the clip
       buffer = IO::Memory.new
       Process.run("ffprobe",
         ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
@@ -99,8 +98,10 @@ module Charqui
         ["-v", "error", "-select_streams", "a:0", "-show_entries",
            "stream=bit_rate", "-of", "csv=p=0", @input_name.to_s],
         output: buffer)
+
+      # at this point, audio_rate is unused, but in the future we'd like to add
+      # something like --keep_audio_quality or something.
       # We need the audio rate in KiB
-      # TODO: add a way to keep current audio_rate.
       audio_rate = buffer.to_s.to_f / 1024
       buffer.clear
 
@@ -117,7 +118,6 @@ module Charqui
 
       encoder = self.get_encoder
       puts "Using the #{encoder} encoder"
-      puts "Running first pass..."
 
       prelude = ["-i", @input_name.to_s]
       video_settings = ["-c:v", encoder, "-b:v", "#{video_rate.to_i}K"]
@@ -129,6 +129,9 @@ module Charqui
         video_settings << "scale=-2:#{@target_resolution}"
       end
 
+      puts "Running first pass..."
+      # In the first pass we don't need to process the audio so we simply use
+      # -an
       first_pass_args = prelude + video_settings + ["-an"] +
         final_params + ["-pass", "1", null_output]
       Process.run("ffmpeg", first_pass_args, output: Process::Redirect::Inherit,
