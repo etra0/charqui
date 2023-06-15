@@ -5,25 +5,25 @@ module Charqui
       "mb" => 1024,
       "kb" => 1
     }
-    @value = 24 * 1024
     @raw : String
+    @value = 0
     getter value, raw
 
     def initialize(@raw : String = "24mb")
-      self.parse
+      @value = self.parse
     end
 
-    def parse
+    private def parse : Int
       value_to_parse = @raw.downcase
       expr = /(?<val>[0-9\.]+)(?<sz>mb|kb|gb)/.match(value_to_parse)
-      value = 0
       begin
         val = $1.to_f
         sz = $2
-        @value = (val * SIZE_FROM_KB[sz]).to_i
+        value = (val * SIZE_FROM_KB[sz]).to_i
       rescue
         raise "Couldn't parse #{value_to_parse}, make sure to use proper size specifier."
       end
+      return value
     end
   end
 end
