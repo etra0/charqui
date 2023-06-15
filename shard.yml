@@ -6,7 +6,7 @@ authors:
 
 targets:
   charqui:
-    main: src/charqui.cr
+    main: src/cli.cr
 
 crystal: 1.8.2
 

@@ -1,3 +1,3 @@
 require "spec"
-require "../src/cli"
+require "../src/charqui"
 require "../src/size_parser"
