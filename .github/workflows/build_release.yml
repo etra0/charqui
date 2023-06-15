@@ -1,0 +1,34 @@
+name: Deploy
+
+on:
+  push:
+    tags: v*
+    
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Crystal
+      uses: crystal-lang/install-crystal@v1
+      
+    - name: Run release build
+      run: shards build --release
+    - name: Pack release file
+      run: |
+        cp ./bin/charqui .
+        tar -zcvf charqui-${{ matrix.os }}-${{ github.ref_name}}.tar.gz charqui
+    - name: "Automatic Release"
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "${{ github.ref_name }}"
+        prerelease: false
+        title: "${{ github.ref_name }}"
+        files: |
+          charqui-${{ matrix.os }}-${{ github.ref_name}}.tar.gz
