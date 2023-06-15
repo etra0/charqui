@@ -9,19 +9,7 @@ Usage: charqui input_video.mp4 -o output_video.mp4 -s 10MB
     -h, --help                       Show this help
     -o OUTPUT, --output=OUTPUT       Name of the output file, default: output.mp4
     -r RATIO, --ratio=RATIO          Ratio between video/audio on target size, default 4:1
-    -s SIZE, --size=SIZE             Target size, example: 10MB, 100KB, etc. Default: 5MB
+    -s SIZE, --size=SIZE             Target size, example: 10MB, 100KB, etc. Default: 24MB (discord limit)
     -r RESOLUTION, --resolution      Target resolution. You only need to specify width,
                                        for example, 1080, 720, 480, etc.
 ```
-
-## Contributing
-
-1. Fork it (<https://github.com/etra0/charqui/fork>)
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
-
-## Contributors
-
-- [Sebastián Aedo](https://github.com/etra0) - creator and maintainer
