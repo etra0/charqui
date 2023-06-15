@@ -29,8 +29,31 @@ jobs:
       with:
         name: ${{ matrix.os }}
         path: charqui-${{ matrix.os }}-${{ github.ref_name}}.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Crystal
+      uses: crystal-lang/install-crystal@v1
+      
+    - name: Run release build
+      run: shards build --release
+
+    - name: Pack release file
+      run: |
+        Copy bin/charqui.exe ./charqui.exe
+        tar -a -c -f charqui-windows-${{ github.ref_name }}.zip charqui.exe
+
+    - name: "Upload artifact"
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-latest
+        path: charqui-windows-${{ github.ref_name }}.zip
+
   release:
-    needs: build
+    needs: [build, build-windows]
     runs-on: ubuntu-latest
 
     steps:
@@ -41,6 +64,7 @@ jobs:
       run: |
         mv ubuntu-latest/charqui-ubuntu-latest-${{ github.ref_name }}.tar.gz charqui-linux-${{ github.ref_name }}.tar.gz
         mv macos-latest/charqui-macos-latest-${{ github.ref_name }}.tar.gz .
+        mv windows-latest/charqui-windows-${{ github.ref_name }}.zip .
 
     - name: "Automatic Release"
       uses: "marvinpinto/action-automatic-releases@latest"
@@ -50,3 +74,4 @@ jobs:
         title: "${{ github.ref_name }}"
         files: |
           charqui-*.tar.gz
+          charqui-*.zip
