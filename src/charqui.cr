@@ -32,9 +32,7 @@ module Charqui
                  ) { |ratio| self.parse_ratio ratio }
 
         parser.on("-s SIZE", "--size=SIZE",
-                  <<-STRING
-                  Target size, example: 10MB, 100KB, etc. Default: 5MB
-                  STRING
+                  "Target size, example: 10MB, 100KB, etc. Default: 5MB"
                  ) { |sz| self.parse_size sz }
 
         parser.on("-r RESOLUTION", "--resolution",
