@@ -48,8 +48,9 @@ module Charqui
 
           @input_name = Path.new rem[0]
         end
-
       end
+
+      raise "We only support mp4 as output for now." if @output_name.extension != ".mp4"
     end
 
     def parse_ratio(ratio : String)
