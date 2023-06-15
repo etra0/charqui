@@ -15,7 +15,7 @@ module Charqui
         sz = $2
         value = val * SIZE_FROM_KB[sz]
       rescue
-        raise "Couldn't parse #{value_to_parse}, make sure to use proper format"
+        raise "Couldn't parse #{value_to_parse}, make sure to use proper size specifier"
       end
       return value
     end
