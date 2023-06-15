@@ -5,8 +5,8 @@ module Charqui
     @input_name = Path.new
     @output_name = Path.new "output.mp4"
     @ratio = 0.8
-    # Target size in KB, default is 5MB.
-    @target_size = 5 * 1024
+    # Target size in KB, default is 24MB.
+    @target_size = 24 * 1024
     @target_resolution : (Nil | String)
 
     getter ratio, target_size
@@ -32,7 +32,7 @@ module Charqui
                  ) { |ratio| self.parse_ratio ratio }
 
         parser.on("-s SIZE", "--size=SIZE",
-                  "Target size, example: 10MB, 100KB, etc. Default: 5MB"
+                  "Target size, example: 10MB, 100KB, etc. Default: 24MB (discord limit)"
                  ) { |sz| self.parse_size sz }
 
         parser.on("-r RESOLUTION", "--resolution",
