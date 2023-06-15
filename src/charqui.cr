@@ -133,7 +133,7 @@ module Charqui
       # In the first pass we don't need to process the audio so we simply use
       # -an
       first_pass_args = prelude + video_settings + ["-an"] +
-        final_params + ["-pass", "1", null_output]
+        final_params + ["-pass", "1", null_output, "-y"]
       Process.run("ffmpeg", first_pass_args, output: Process::Redirect::Inherit,
                   error: Process::Redirect::Inherit)
 
