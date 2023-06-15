@@ -3,10 +3,10 @@ require "./size_parser"
 module Charqui
   class CLI
     @input_name = Path.new
-    @output_name = Path.new "output.mp4"
+    @output_name : (Nil | Path)
     @ratio = 0.8
     # Target size in KB, default is 24MB.
-    @target_size = 24 * 1024
+    @target_size = SizeKB.new
     @target_resolution : (Nil | String)
 
     getter ratio, target_size
@@ -50,7 +50,9 @@ module Charqui
         end
       end
 
-      raise "We only support mp4 as output for now." if @output_name.extension != ".mp4"
+      @output_name = Path.new((@input_name.parent / @input_name.stem).to_s + "_#{@target_size.raw}.mp4") if @output_name.nil?
+
+      raise "We only support mp4 as output for now." if @output_name.try &.extension != ".mp4"
     end
 
     def parse_ratio(ratio : String)
@@ -60,7 +62,7 @@ module Charqui
     end
 
     def parse_size(size : String)
-      @target_size = SizeKB.parse size
+      @target_size = SizeKB.new size
     end
 
     def get_encoder : String
@@ -84,7 +86,7 @@ module Charqui
 
       raise "Input file #{@input_name} doesn't exists." if !File.exists?(@input_name)
 
-      if File.size(@input_name) / 1024 <= @target_size
+      if File.size(@input_name) / 1024 <= @target_size.value
         raise "Target file size is actually bigger than the original file."
       end
 
@@ -118,7 +120,7 @@ module Charqui
       buffer.clear
       err_output.clear
 
-      target_sz_kib = @target_size * 8 / duration
+      target_sz_kib = @target_size.value * 8 / duration
       video_rate = target_sz_kib * @ratio
       audio_rate = target_sz_kib * (1 - @ratio)
 
@@ -150,9 +152,10 @@ module Charqui
       Process.run("ffmpeg", first_pass_args, output: Process::Redirect::Inherit,
                   error: Process::Redirect::Inherit)
 
+      output_name = @output_name.not_nil!
       puts "Running second pass..."
       second_pass_args = prelude + video_settings + audio_settings +
-        final_params + ["-pass", "2", @output_name.to_s]
+        final_params + ["-pass", "2", output_name.to_s]
 
       Process.run("ffmpeg", second_pass_args,
           output: Process::Redirect::Inherit,
@@ -161,7 +164,7 @@ module Charqui
 
       puts "Deleting ffmpeg pass files..."
       Dir.glob("ffmpeg2pass-*") do |f|
-        File.delete (@output_name.parent / f)
+        File.delete (output_name.parent / f)
       end
     end
   end
