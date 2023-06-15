@@ -89,24 +89,34 @@ module Charqui
       end
 
       # First we get the duration of the clip
+      err_output = IO::Memory.new
       buffer = IO::Memory.new
       Process.run("ffprobe",
         ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
            @input_name.to_s],
-        output: buffer)
-      duration = buffer.to_s.to_f
+        output: buffer, error: err_output)
+      begin
+        duration = buffer.to_s.to_f
+      rescue
+        raise "Couldn't get the duration of the video, got: `#{err_output.to_s}` instead."
+      end
       buffer.clear
-
-      Process.run("ffprobe",
-        ["-v", "error", "-select_streams", "a:0", "-show_entries",
-           "stream=bit_rate", "-of", "csv=p=0", @input_name.to_s],
-        output: buffer)
+      err_output.clear
 
       # at this point, audio_rate is unused, but in the future we'd like to add
       # something like --keep_audio_quality or something.
       # We need the audio rate in KiB
-      audio_rate = buffer.to_s.to_f / 1024
+      Process.run("ffprobe",
+        ["-v", "error", "-select_streams", "a:0", "-show_entries",
+           "stream=bit_rate", "-of", "csv=p=0", @input_name.to_s],
+        output: buffer, error: err_output)
+      begin
+        audio_rate = buffer.to_s.to_f / 1024
+      rescue
+        puts "INFO: Couldn't get the audio bitrate, got `#{err_output.to_s}` instead."
+      end
       buffer.clear
+      err_output.clear
 
       target_sz_kib = @target_size * 8 / duration
       video_rate = target_sz_kib * @ratio
