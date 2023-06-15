@@ -1,3 +1,5 @@
+require "./size_parser"
+
 module Charqui
   class CLI
     @input_name = Path.new
@@ -57,7 +59,7 @@ module Charqui
     end
 
     def parse_size(size : String)
-      puts "Parsing SIZE #{size}"
+      @target_size = SizeKB.parse size
     end
   end
 
