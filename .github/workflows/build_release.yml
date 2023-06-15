@@ -24,11 +24,7 @@ jobs:
         cp ./bin/charqui .
         tar -zcvf charqui-${{ matrix.os }}-${{ github.ref_name}}.tar.gz charqui
     - name: "Automatic Release"
-      uses: "marvinpinto/action-automatic-releases@latest"
+      uses: actions/upload-artifact@v3
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "${{ github.ref_name }}"
-        prerelease: false
-        title: "${{ github.ref_name }}"
-        files: |
-          charqui-${{ matrix.os }}-${{ github.ref_name}}.tar.gz
+        name: ${{ github.ref_name }}
+        path: charqui-${{ matrix.os }}-${{ github.ref_name}}.tar.gz
