@@ -77,6 +77,10 @@ module Charqui
     end
 
     def execute
+      if !Process.find_executable("ffmpeg")
+        raise "This tools depends on FFmpeg, it has to be installed and in your PATH."
+      end
+
       raise "Input file #{@input_name} doesn't exists." if !File.exists?(@input_name)
 
       if File.size(@input_name) / 1024 <= @target_size
