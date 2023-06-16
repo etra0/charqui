@@ -169,7 +169,7 @@ module Charqui
       puts "Video saved as #{output_name.to_s}"
       puts "Deleting ffmpeg pass files..."
       Dir.glob("ffmpeg2pass-*") do |f|
-        File.delete (output_name.parent / f)
+        File.delete f
       end
     end
   end
