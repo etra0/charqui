@@ -83,8 +83,8 @@ module Charqui
     end
 
     def execute
-      if !Process.find_executable("ffmpeg")
-        raise AppError.new "This tools depends on FFmpeg, it has to be installed and in your PATH."
+      if !Process.find_executable("ffmpeg") || !Process.find_executable("ffprobe")
+        raise AppError.new "This tool depends on FFmpeg (with ffprobe), it has to be installed and in your PATH."
       end
 
       raise AppError.new "Input file #{@input_name} doesn't exists." if !File.exists?(@input_name)
