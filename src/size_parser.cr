@@ -15,7 +15,7 @@ module Charqui
 
     private def parse : Int
       value_to_parse = @raw.downcase
-      expr = /(?<val>[0-9\.]+)(?<sz>mb|kb|gb)/.match(value_to_parse)
+      expr = /(?<val>[0-9\.]+)(?<sz>mb|kb|gb)$/.match(value_to_parse)
       begin
         val = $1.to_f
         sz = $2
