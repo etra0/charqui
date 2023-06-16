@@ -1,6 +1,9 @@
 require "./size_parser"
 
 module Charqui
+  class AppError < Exception
+  end
+
   class CLI
     @input_name = Path.new
     @output_name : (Nil | Path)
@@ -43,8 +46,8 @@ module Charqui
         ) { |res| @target_resolution = res }
 
         parser.unknown_args do |rem|
-          raise "Missing input file." if rem.empty?
-          raise "We only support one file as input." if rem.size > 1
+          raise AppError.new "Missing input file." if rem.empty?
+          raise AppError.new "We only support one file as input." if rem.size > 1
 
           @input_name = Path.new rem[0]
         end
@@ -52,7 +55,7 @@ module Charqui
 
       @output_name = Path.new((@input_name.parent / @input_name.stem).to_s + "_#{@target_size.raw}.mp4") if @output_name.nil?
 
-      raise "We only support mp4 as output for now." if @output_name.try &.extension != ".mp4"
+      raise AppError.new "We only support mp4 as output for now." if @output_name.try &.extension != ".mp4"
     end
 
     def parse_ratio(ratio : String)
@@ -81,13 +84,13 @@ module Charqui
 
     def execute
       if !Process.find_executable("ffmpeg")
-        raise "This tools depends on FFmpeg, it has to be installed and in your PATH."
+        raise AppError.new "This tools depends on FFmpeg, it has to be installed and in your PATH."
       end
 
-      raise "Input file #{@input_name} doesn't exists." if !File.exists?(@input_name)
+      raise AppError.new "Input file #{@input_name} doesn't exists." if !File.exists?(@input_name)
 
       if File.size(@input_name) / 1024 <= @target_size.value
-        raise "Target file size is actually bigger than the original file."
+        raise AppError.new "Target file size is actually bigger than the original file."
       end
 
       # First we get the duration of the clip
@@ -100,7 +103,7 @@ module Charqui
       begin
         duration = buffer.to_s.to_f
       rescue
-        raise "Couldn't get the duration of the video, got: `#{err_output.to_s}` instead."
+        raise AppError.new "Couldn't get the duration of the video, got: `#{err_output.to_s}` instead."
       end
       buffer.clear
       err_output.clear

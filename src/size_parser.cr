@@ -21,7 +21,7 @@ module Charqui
         sz = $2
         value = (val * SIZE_FROM_KB[sz]).to_i
       rescue
-        raise "Couldn't parse #{value_to_parse}, make sure to use proper size specifier."
+        raise AppError.new "Couldn't parse #{value_to_parse}, make sure to use proper size specifier."
       end
       return value
     end
