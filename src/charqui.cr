@@ -165,6 +165,8 @@ module Charqui
           error: Process::Redirect::Inherit,
           input: Process::Redirect::Inherit)
 
+      puts
+      puts "Video saved as #{output_name.to_s}"
       puts "Deleting ffmpeg pass files..."
       Dir.glob("ffmpeg2pass-*") do |f|
         File.delete (output_name.parent / f)
