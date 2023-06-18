@@ -59,7 +59,11 @@ module Charqui
     end
 
     def parse_ratio(ratio : String)
-      vid, sound = ratio.split(":").map &.to_f
+      begin
+        vid, sound = ratio.split(":").map &.to_f
+      rescue
+        raise AppError.new "Invalid format of proportion (argument -p #{ratio}), make sure to use the format V:A (ex: 4:1)."
+      end
       total = vid + sound
       @ratio = vid / total
     end
