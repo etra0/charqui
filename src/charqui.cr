@@ -30,7 +30,7 @@ module Charqui
                   "Name of the output file, default: output.mp4"
                  ) { |name| @output_name = Path.new name }
 
-        parser.on("-p RATIO", "--proportion=PROPORTION",
+        parser.on("-p PROPORTION", "--proportion=PROPORTION",
                   "Ratio between video/audio on target size, default 4:1"
                  ) { |ratio| self.parse_ratio ratio }
 
