@@ -6,11 +6,11 @@ module Charqui
 
   class CLI
     @input_name = Path.new
-    @output_name : (Nil | Path)
+    @output_name : Path?
     @ratio = 0.8
     # Target size in KB, default is 24MB.
     @target_size = SizeKB.new
-    @target_resolution : (Nil | String)
+    @target_resolution : String?
 
     getter ratio, target_size
 
