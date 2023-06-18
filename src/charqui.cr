@@ -11,6 +11,7 @@ module Charqui
     # Target size in KB, default is 24MB.
     @target_size = SizeKB.new
     @target_resolution : String?
+    @keep_audio_quality = false
 
     getter ratio, target_size
 
@@ -44,6 +45,10 @@ module Charqui
                     for example, 1080, 720, 480, etc.
                   STRING
                 ) { |res| @target_resolution = res }
+
+        parser.on("-k", "--keep-audio-quality", "Keep the current audio quality. \n\
+                 Warning: If the target size is too small, it might be not possible to achieve it since the size of the audio itself could be bigger."
+                ) { @keep_audio_quality = true }
 
         parser.unknown_args do |rem|
           raise AppError.new "Missing input file." if rem.empty?
@@ -112,9 +117,8 @@ module Charqui
       buffer.clear
       err_output.clear
 
-      # at this point, audio_rate is unused, but in the future we'd like to add
-      # something like --keep_audio_quality or something.
       # We need the audio rate in KiB
+      audio_rate = nil
       Process.run("ffprobe",
         ["-v", "error", "-select_streams", "a:0", "-show_entries",
            "stream=bit_rate", "-of", "csv=p=0", @input_name.to_s],
@@ -123,13 +127,24 @@ module Charqui
         audio_rate = buffer.to_s.to_f / 1024
       rescue
         puts "INFO: Couldn't get the audio bitrate, got `#{err_output.to_s}` instead."
+        if @keep_audio_quality
+          print "WARNING: ".colorize(:yellow), "-k argument will be ignored since the audio quality couldn't be calculated.\n"
+        end
       end
       buffer.clear
       err_output.clear
 
       target_sz_kib = @target_size.value * 8 / duration
-      video_rate = target_sz_kib * @ratio
-      audio_rate = target_sz_kib * (1 - @ratio)
+      if audio_rate && @keep_audio_quality
+        video_rate = target_sz_kib - audio_rate
+        if video_rate < 0
+          print "WARNING: ".colorize(:yellow), "The video rate minus audio rate was less than 0, so using at least 100kb\n"
+          video_rate = 100
+        end
+      else
+        video_rate = target_sz_kib * @ratio
+        audio_rate = target_sz_kib * (1 - @ratio)
+      end
 
       null_output : String
       {% if flag?(:win32) %}
