@@ -30,7 +30,7 @@ module Charqui
                   "Name of the output file, default: output.mp4"
                  ) { |name| @output_name = Path.new name }
 
-        parser.on("-r RATIO", "--ratio=RATIO",
+        parser.on("-p RATIO", "--proportion=PROPORTION",
                   "Ratio between video/audio on target size, default 4:1"
                  ) { |ratio| self.parse_ratio ratio }
 
@@ -43,7 +43,7 @@ module Charqui
                   Target resolution. You only need to specify width,
                     for example, 1080, 720, 480, etc.
                   STRING
-        ) { |res| @target_resolution = res }
+                ) { |res| @target_resolution = res }
 
         parser.unknown_args do |rem|
           raise AppError.new "Missing input file." if rem.empty?
