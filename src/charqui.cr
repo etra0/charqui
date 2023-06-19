@@ -118,13 +118,13 @@ module Charqui
       err_output.clear
 
       # We need the audio rate in KiB
-      audio_rate = nil
+      audio_rate_ffprobe = nil
       Process.run("ffprobe",
         ["-v", "error", "-select_streams", "a:0", "-show_entries",
            "stream=bit_rate", "-of", "csv=p=0", @input_name.to_s],
         output: buffer, error: err_output)
       begin
-        audio_rate = buffer.to_s.to_f / 1024
+        audio_rate_ffprobe = buffer.to_s.to_f / 1024
       rescue
         puts "INFO: Couldn't get the audio bitrate, got `#{err_output.to_s}` instead."
         if @keep_audio_quality
@@ -135,15 +135,16 @@ module Charqui
       err_output.clear
 
       target_sz_kib = @target_size.value * 8 / duration
-      if audio_rate && @keep_audio_quality
-        video_rate = target_sz_kib - audio_rate
+      if audio_rate_ffprobe && @keep_audio_quality
+        audio_rate = audio_rate_ffprobe
+        video_rate = target_sz_kib - audio_rate_ffprobe
         if video_rate < 0
           print "WARNING: ".colorize(:yellow), "The video rate minus audio rate was less than 0, so using at least 100kb\n"
           video_rate = 100
         end
       else
-        video_rate = target_sz_kib * @ratio
-        audio_rate = target_sz_kib * (1 - @ratio)
+        audio_rate = Math.min(target_sz_kib * (1 - @ratio), (audio_rate_ffprobe || Float32::MAX))
+        video_rate = target_sz_kib - audio_rate
       end
 
       null_output : String
