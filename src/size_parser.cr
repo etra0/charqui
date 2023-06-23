@@ -5,9 +5,8 @@ module Charqui
       "mb" => 1024,
       "kb" => 1
     }
-    @raw : String
-    @value : Int32
-    getter value, raw
+    getter raw : String
+    getter value : Int32
 
     def initialize(@raw : String = "24mb")
       @value = parse
