@@ -6,14 +6,14 @@ module Charqui
       "kb" => 1
     }
     @raw : String
-    @value = 0
+    @value : Int32
     getter value, raw
 
     def initialize(@raw : String = "24mb")
-      @value = self.parse
+      @value = parse
     end
 
-    private def parse : Int
+    private def parse : Int32
       value_to_parse = @raw.downcase
       expr = /(?<val>[0-9\.]+)(?<sz>mb|kb|gb)$/.match(value_to_parse)
       begin
