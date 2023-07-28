@@ -73,14 +73,21 @@ module Charqui
       @ratio = vid / total
     end
 
+    def self.with_pipes(&block : IO::Memory, IO::Memory ->)
+      input = IO::Memory.new
+      output = IO::Memory.new
+      yield input, output
+    end
+
     def parse_size(size : String)
       @target_size = SizeKB.new size
     end
 
     def get_encoder : String
-      buffer = IO::Memory.new
-      Process.run("ffmpeg", ["-version"], output: buffer)
-      output = buffer.to_s
+      output = CLI.with_pipes do |stdout, _|
+        Process.run("ffmpeg", ["-version"], output: stdout)
+        stdout.to_s
+      end
 
       # For some reason, neither of these encoder can have precise control of
       # the bitrate, which means when we try to target a specific size, they
@@ -103,36 +110,34 @@ module Charqui
       end
 
       # First we get the duration of the clip
-      err_output = IO::Memory.new
-      buffer = IO::Memory.new
-      Process.run("ffprobe",
-        ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
-           @input_name.to_s],
-        output: buffer, error: err_output)
-      begin
-        duration = buffer.to_s.to_f
-      rescue
-        raise AppError.new "Couldn't get the duration of the video, got: `#{err_output.to_s}` instead."
+      duration = CLI.with_pipes do |stdout, stderr|
+        Process.run("ffprobe",
+                    ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                     @input_name.to_s],
+                     output: stdout, error: stderr)
+        begin
+          stdout.to_s.to_f
+        rescue
+          raise AppError.new "Couldn't get the duration of the video, got: `#{stderr.to_s}` instead."
+        end
       end
-      buffer.clear
-      err_output.clear
 
       # We need the audio rate in KiB
       audio_rate_ffprobe = nil
-      Process.run("ffprobe",
-        ["-v", "error", "-select_streams", "a:0", "-show_entries",
-           "stream=bit_rate", "-of", "csv=p=0", @input_name.to_s],
-        output: buffer, error: err_output)
-      begin
-        audio_rate_ffprobe = buffer.to_s.to_f / 1024
-      rescue
-        puts "INFO: Couldn't get the audio bitrate, got `#{err_output.to_s}` instead."
-        if @keep_audio_quality
-          print "WARNING: ".colorize(:yellow), "-k argument will be ignored since the audio quality couldn't be calculated.\n"
+      CLI.with_pipes do |stdout, stderr|
+        Process.run("ffprobe",
+                    ["-v", "error", "-select_streams", "a:0", "-show_entries",
+                     "stream=bit_rate", "-of", "csv=p=0", @input_name.to_s],
+                     output: stdout, error: stderr)
+        begin
+          audio_rate_ffprobe = stdout.to_s.to_f / 1024
+        rescue
+          puts "INFO: Couldn't get the audio bitrate, got `#{stderr.to_s}` instead."
+          if @keep_audio_quality
+            print "WARNING: ".colorize(:yellow), "-k argument will be ignored since the audio quality couldn't be calculated.\n"
+          end
         end
       end
-      buffer.clear
-      err_output.clear
 
       target_sz_kib = @target_size.value * 8 / duration
       if audio_rate_ffprobe && @keep_audio_quality
