@@ -152,13 +152,6 @@ module Charqui
         video_rate = target_sz_kib - audio_rate
       end
 
-      null_output : String
-      {% if flag?(:win32) %}
-      null_output = "nul"
-      {% else %}
-      null_output = "/dev/null"
-      {% end %}
-
       encoder = self.get_encoder
       puts "Using the #{encoder} encoder"
 
@@ -176,7 +169,7 @@ module Charqui
       # In the first pass we don't need to process the audio so we simply use
       # -an
       first_pass_args = prelude + video_settings + ["-an"] +
-        final_params + ["-pass", "1", null_output, "-y"]
+        final_params + ["-pass", "1", File::NULL, "-y"]
       Process.run("ffmpeg", first_pass_args, output: Process::Redirect::Inherit,
                   error: Process::Redirect::Inherit)
 
