@@ -170,8 +170,7 @@ module Charqui
       # -an
       first_pass_args = prelude + video_settings + ["-an"] +
         final_params + ["-pass", "1", File::NULL, "-y"]
-      Process.run("ffmpeg", first_pass_args, output: Process::Redirect::Inherit,
-                  error: Process::Redirect::Inherit)
+      Process.run("ffmpeg", first_pass_args, output: :inherit, error: :inherit)
 
       output_name = @output_name.not_nil!
       puts "Running second pass..."
@@ -179,9 +178,7 @@ module Charqui
         final_params + ["-pass", "2", output_name.to_s]
 
       Process.run("ffmpeg", second_pass_args,
-          output: Process::Redirect::Inherit,
-          error: Process::Redirect::Inherit,
-          input: Process::Redirect::Inherit)
+          output: :inherit, error: :inherit, input: :inherit)
 
       puts
       puts "Video saved as #{output_name.to_s}"
