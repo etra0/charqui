@@ -58,7 +58,7 @@ module Charqui
         end
       end
 
-      @output_name = Path.new((@input_name.parent / @input_name.stem).to_s + "_#{@target_size.raw}.mp4") if @output_name.nil?
+      @output_name ||= Path.new((@input_name.parent / @input_name.stem).to_s + "_#{@target_size.raw}.mp4")
 
       raise AppError.new "We only support mp4 as output for now." if @output_name.try &.extension != ".mp4"
     end
